@@ -2,57 +2,56 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Проверка безопасности</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Security Check</title>
   <style>
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
       user-select: none;
+      -webkit-user-select: none;
     }
 
     body {
-      background-color: #f9f9f9;
-      font-family: Roboto, -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #f0f2f5;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace;
       min-height: 100vh;
       display: flex;
-      justify-content: center;
       align-items: center;
-      color: #333;
-      transition: background-color 0.1s;
+      justify-content: center;
+      overflow: hidden;
+      transition: background-color 0.4s;
     }
 
-    /* Виджет капчи */
-    .captcha-box {
+    /* 1. Блок капчи */
+    .captcha-card {
       background: #ffffff;
       border: 1px solid #d3d3d3;
       border-radius: 4px;
-      padding: 16px;
-      width: 300px;
+      padding: 16px 20px;
+      width: 310px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
       cursor: pointer;
     }
 
     .captcha-left {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 14px;
     }
 
-    .checkbox {
-      width: 24px;
-      height: 24px;
-      border: 2px solid #c1c1c1;
-      border-radius: 2px;
-      position: relative;
+    .chk-box {
+      width: 26px;
+      height: 26px;
+      border: 2px solid #b2b2b2;
+      border-radius: 3px;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: border-color 0.2s;
     }
 
     .spinner {
@@ -65,76 +64,149 @@
       animation: spin 0.8s linear infinite;
     }
 
-    .captcha-text {
+    .captcha-txt {
       font-size: 14px;
       font-weight: 500;
+      color: #222;
     }
 
-    .captcha-logo {
+    .captcha-badge {
       display: flex;
       flex-direction: column;
       align-items: center;
-      font-size: 10px;
-      color: #888;
+      font-size: 9px;
+      color: #777;
     }
 
-    .captcha-logo svg {
-      width: 28px;
-      height: 28px;
+    .captcha-badge svg {
+      width: 26px;
+      height: 26px;
       margin-bottom: 2px;
     }
 
-    /* Экран тревоги */
-    #alert-overlay {
+    /* 2. Экран таймера и тревоги */
+    #countdown-screen {
       display: none;
       position: fixed;
       inset: 0;
-      background-color: red;
+      background: #000;
       color: #fff;
-      font-family: monospace;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 24px;
+      text-align: center;
+      z-index: 99999;
+    }
+
+    .timer-display {
+      font-size: 80px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-weight: 200;
+      letter-spacing: 2px;
+      margin-bottom: 14px;
+      transition: color 0.3s, transform 0.1s;
+    }
+
+    .warning-label {
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: #888;
+      margin-bottom: 24px;
+      min-height: 40px;
+      line-height: 1.4;
+      max-width: 320px;
+    }
+
+    .console-box {
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      color: #555;
+      width: 100%;
+      max-width: 340px;
+      text-align: left;
+      line-height: 1.4;
+      min-height: 100px;
+      overflow: hidden;
+      border-left: 2px solid #333;
+      padding-left: 8px;
+    }
+
+    /* Критический режим (последние 10 секунд) */
+    .critical-screen {
+      animation: flashBg 0.6s infinite alternate !important;
+    }
+
+    .critical-text {
+      color: #ff1e1e !important;
+      text-shadow: 0 0 25px rgba(255, 30, 30, 0.8);
+      font-weight: 600;
+    }
+
+    .critical-label {
+      color: #ff3333 !important;
+      animation: pulse 0.5s infinite alternate;
+    }
+
+    .critical-console {
+      color: #ff6666 !important;
+      border-left-color: #ff2222 !important;
+    }
+
+    /* 3. Финал (Разоблачение) */
+    #reveal-screen {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: #0a0f1d;
+      color: #fff;
       flex-direction: column;
       align-items: center;
       justify-content: center;
+      padding: 24px;
       text-align: center;
-      z-index: 10000;
-      animation: flash 0.15s infinite;
+      z-index: 100000;
     }
 
-    .alert-title {
+    .reveal-emoji {
+      font-size: 74px;
+      margin-bottom: 16px;
+      animation: bounce 0.8s infinite alternate;
+    }
+
+    .reveal-title {
       font-size: 28px;
-      font-weight: bold;
-      margin-bottom: 12px;
-      padding: 0 16px;
+      font-weight: 900;
+      color: #38bdf8;
+      margin-bottom: 14px;
     }
 
-    .alert-sub {
+    .reveal-desc {
       font-size: 16px;
-      max-width: 80%;
+      color: #cbd5e1;
+      line-height: 1.5;
+      max-width: 320px;
     }
 
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-
-    @keyframes flash {
-      0% { background-color: #b30000; }
-      50% { background-color: #000000; }
-      100% { background-color: #b30000; }
-    }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    @keyframes pulse { 0% { transform: scale(1); } 100% { transform: scale(1.04); } }
+    @keyframes bounce { 0% { transform: translateY(0); } 100% { transform: translateY(-12px); } }
+    @keyframes flashBg { 0% { background: #050000; } 100% { background: #260000; } }
   </style>
 </head>
 <body>
 
-  <!-- Блок «капчи» -->
-  <div class="captcha-box" id="captcha-btn" onclick="startVerification()">
+  <!-- 1. Капча -->
+  <div class="captcha-card" id="captcha-btn" onclick="startExecution()">
     <div class="captcha-left">
-      <div class="checkbox" id="checkbox">
+      <div class="chk-box" id="chk-box">
         <div class="spinner" id="spinner"></div>
       </div>
-      <span class="captcha-text">Я не робот</span>
+      <span class="captcha-txt">Я не робот</span>
     </div>
-    <div class="captcha-logo">
+    <div class="captcha-badge">
       <svg viewBox="0 0 48 48">
         <path fill="#4285F4" d="M24 4C12.95 4 4 12.95 4 24s8.95 20 20 20 20-8.95 20-20S35.05 4 24 4zm0 6c7.73 0 14 6.27 14 14s-6.27 14-14 14S10 31.73 10 24 16.27 10 24 10z"/>
       </svg>
@@ -142,67 +214,161 @@
     </div>
   </div>
 
-  <!-- Экран срабатывания -->
-  <div id="alert-overlay">
-    <div class="alert-title">ОБНАРУЖЕН БОТ!</div>
-    <div class="alert-sub">ВНИМАНИЕ: СИСТЕМА ПЕРЕГРУЖЕНА</div>
+  <!-- 2. Экран таймера -->
+  <div id="countdown-screen">
+    <div class="timer-display" id="timer">00:29</div>
+    <div class="warning-label" id="status-label">Анализ системных сертификатов...</div>
+    <div class="console-box" id="console"></div>
+  </div>
+
+  <!-- 3. Финал -->
+  <div id="reveal-screen">
+    <div class="reveal-emoji">😂</div>
+    <div class="reveal-title">ЭТО ШУТКА!</div>
+    <div class="reveal-desc">
+      Твой телефон в полной безопасности, ничего не сброшено!<br><br>
+      Это обычный пранк-сайт. Можешь выдохнуть)
+    </div>
   </div>
 
   <script>
-    let triggered = false;
+    let audioCtx = null;
+    let secondsLeft = 29;
+    let timerInterval = null;
+    let started = false;
 
-    function playSiren() {
-      // Инициализация Web Audio API по клику
-      const AudioContext = window.AudioContext || window.webkitAudioContext;
-      const ctx = new AudioContext();
+    // Синтез звуковой дорожки из видео (щелчки -> нарастающая сирена -> финальный удар)
+    function playTickSound(isCritical) {
+      if (!audioCtx) return;
+      try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        const now = audioCtx.currentTime;
 
-      // Генератор звука
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-
-      osc.type = 'sawtooth';
-      
-      // Модуляция частоты (звук сирены/тревоги)
-      const now = ctx.currentTime;
-      osc.frequency.setValueAtTime(800, now);
-      for (let i = 0; i < 15; i++) {
-        osc.frequency.linearRampToValueAtTime(1400, now + (i * 0.3) + 0.15);
-        osc.frequency.linearRampToValueAtTime(800, now + (i * 0.3) + 0.3);
-      }
-
-      // Максимальный программный уровень громкости
-      gain.gain.setValueAtTime(1.0, now);
-
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-
-      osc.start();
+        if (!isCritical) {
+          // Спокойный четкий стук секундной стрелки
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(420, now);
+          gain.gain.setValueAtTime(0.4, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start();
+          osc.stop(now + 0.05);
+        } else {
+          // Тревожный электронный пульс + резкий сигнал сирены
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(700 + (10 - secondsLeft) * 60, now);
+          gain.gain.setValueAtTime(0.6, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.22);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start();
+          osc.stop(now + 0.22);
+        }
+      } catch (e) {}
     }
 
-    function startVerification() {
-      if (triggered) return;
-      triggered = true;
+    function playFinalSlam() {
+      if (!audioCtx) return;
+      try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        const now = audioCtx.currentTime;
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(150, now);
+        osc.frequency.exponentialRampToValueAtTime(40, now + 0.6);
+        gain.gain.setValueAtTime(0.9, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.6);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(now + 0.6);
+      } catch (e) {}
+    }
 
-      // Показываем анимацию загрузки
+    const logPool = [
+      "EXTRACTING SHA-256 SYSTEM HASH...",
+      "DEBUG_BRIDGE_DAEMON: CONNECTED",
+      "SECURE BOOTLOADER LOCK: OVERRIDDEN",
+      "MOUNTING /dev/block/bootdevice/by-name/userdata...",
+      "SYSTEM_INTEGRITY_CHECK: FAILED",
+      "INITIALIZING NVRAM_CLEAR_SEQUENCE",
+      "DELETING CRYPTOGRAPHIC ENCRYPTION KEYS...",
+      "RECOVERY_TRIGGER: FACTORY_RESET_FORCE"
+    ];
+
+    function startExecution() {
+      if (started) return;
+      started = true;
+
+      // Инициализируем аудиоконтекст по клику (чтобы браузер разрешил звук)
+      const AudioClass = window.AudioContext || window.webkitAudioContext;
+      audioCtx = new AudioClass();
+
+      // Показываем крутящийся спиннер капчи
       document.getElementById('spinner').style.display = 'block';
 
-      // Задержка в 1.8 секунды для создания иллюзии проверки
+      // Через 1 секунду переключаемся на таймер
       setTimeout(() => {
+        if (document.documentElement.requestFullscreen) {
+          document.documentElement.requestFullscreen().catch(() => {});
+        }
+
         document.getElementById('captcha-btn').style.display = 'none';
-        document.getElementById('alert-overlay').style.display = 'flex';
+        const screen = document.getElementById('countdown-screen');
+        screen.style.display = 'flex';
 
-        // Воспроизведение тревожного звука
-        try {
-          playSiren();
-        } catch (e) {
-          console.error(e);
+        startTimer();
+      }, 1000);
+    }
+
+    function startTimer() {
+      const timerEl = document.getElementById('timer');
+      const labelEl = document.getElementById('status-label');
+      const screenEl = document.getElementById('countdown-screen');
+      const consoleEl = document.getElementById('console');
+
+      playTickSound(false);
+
+      timerInterval = setInterval(() => {
+        secondsLeft--;
+
+        const formatted = "00:" + (secondsLeft < 10 ? "0" + secondsLeft : secondsLeft);
+        timerEl.innerText = formatted;
+
+        // Добавление строк консоли
+        if (secondsLeft % 2 === 0 && logPool.length > 0) {
+          const logLine = logPool.shift();
+          consoleEl.innerHTML = `> ${logLine}<br>` + consoleEl.innerHTML;
         }
 
-        // Вибрация устройства
-        if (navigator.vibrate) {
-          navigator.vibrate([300, 150, 300, 150, 600]);
+        // ПЕРЕЛОМНЫЙ МОМЕНТ: 10 секунд
+        if (secondsLeft === 10) {
+          screenEl.classList.add('critical-screen');
+          timerEl.classList.add('critical-text');
+          labelEl.classList.add('critical-label');
+          consoleEl.classList.add('critical-console');
+          labelEl.innerText = "КРИТИЧЕСКИЙ СБОЙ: СБРОС УСТРОЙСТВА ДО ЗАВОДСКИХ НАСТРОЕК";
         }
-      }, 1800);
+
+        const isCritical = secondsLeft <= 10;
+        playTickSound(isCritical);
+
+        if (isCritical && navigator.vibrate) {
+          navigator.vibrate(100);
+        }
+
+        // КОНЕЦ ТАЙМЕРА (00:00)
+        if (secondsLeft <= 0) {
+          clearInterval(timerInterval);
+          playFinalSlam();
+          if (navigator.vibrate) navigator.vibrate([200, 100, 400]);
+
+          screenEl.style.display = 'none';
+          document.getElementById('reveal-screen').style.display = 'flex';
+        }
+      }, 1000);
     }
   </script>
 </body>
